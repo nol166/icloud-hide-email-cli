@@ -12,8 +12,14 @@ Requires an **iCloud+** account (any paid iCloud plan). Built with the Go standa
 ## Install
 
 ```
-go install .        # from a clone, or:
-go build -o hidemail .
+go install github.com/nol166/icloud-hide-email-cli/cmd/hidemail@latest
+```
+
+This drops a `hidemail` binary in `$(go env GOPATH)/bin` — make sure that's on your `PATH`.
+Or build from a clone:
+
+```
+go build -o hidemail ./cmd/hidemail
 ```
 
 ## Usage
