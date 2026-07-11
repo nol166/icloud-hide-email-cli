@@ -49,3 +49,7 @@ stays valid for about two weeks. When a command reports the session expired, run
 - Unofficial: this talks to Apple's private iCloud endpoints, which can change without notice.
 - The saved session is a bearer credential for your iCloud web session (not your password, and
   it can't change your password or bypass 2FA). Use `hidemail logout` to remove it.
+
+## License
+
+[MIT](LICENSE)
