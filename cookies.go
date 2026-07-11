@@ -31,6 +31,22 @@ func saveCookies(header string) error {
 	return os.WriteFile(p, []byte(strings.TrimSpace(header)+"\n"), 0o600)
 }
 
+// clearCookies deletes the stored session. Returns false if there was nothing
+// to delete (already signed out).
+func clearCookies() (existed bool, err error) {
+	p, err := cookiePath()
+	if err != nil {
+		return false, err
+	}
+	if err := os.Remove(p); err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 // loadCookies returns the saved Cookie header, or a non-nil error if unset.
 func loadCookies() (string, error) {
 	p, err := cookiePath()

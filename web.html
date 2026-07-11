@@ -55,6 +55,7 @@
   <button id="go">Connect</button>
   <p id="msg"></p>
   <p class="tip">Tip (Chrome/Edge): right-click the request &rarr; <i>Copy</i> &rarr; <i>Copy as cURL</i> also works — paste the whole thing, we'll pull the cookie out.</p>
+  <p class="tip">How long it lasts: this reuses your iCloud web session, which typically stays valid for <b>about two weeks</b> (shorter if you didn't pick &ldquo;Keep me signed in&rdquo;, and it ends if you change your password or sign out). There's no exact expiry we can read from the pasted value — just run <code>hidemail auth</code> again whenever a command tells you the session expired.</p>
 
 <script>
   const btn = document.getElementById('go');
