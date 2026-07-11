@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect hidemail to iCloud</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 640px; margin: 0 auto; padding: 2rem 1.25rem 4rem;
+    color: #1d1d1f; background: #fff;
+  }
+  @media (prefers-color-scheme: dark) { body { color: #f5f5f7; background: #1c1c1e; } }
+  h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
+  .sub { opacity: .65; margin: 0 0 2rem; }
+  ol { padding-left: 1.25rem; }
+  li { margin: 0 0 1rem; }
+  code, kbd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    padding: .1em .4em; border-radius: 5px;
+  }
+  a { color: #0071e3; }
+  textarea {
+    width: 100%; min-height: 120px; margin-top: .5rem; padding: .75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem;
+    border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+    border-radius: 10px; background: transparent; color: inherit; resize: vertical;
+  }
+  button {
+    margin-top: .75rem; padding: .6rem 1.4rem; font-size: 1rem; font-weight: 600;
+    color: #fff; background: #0071e3; border: 0; border-radius: 980px; cursor: pointer;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  #msg { margin-top: 1rem; font-weight: 600; min-height: 1.5em; }
+  .ok { color: #34c759; } .err { color: #ff3b30; }
+  .tip { font-size: .85rem; opacity: .7; }
+</style>
+</head>
+<body>
+  <h1>Connect <code>hidemail</code> to iCloud</h1>
+  <p class="sub">This runs entirely on your machine. Nothing is sent to Apple or anyone else — the copied header goes straight back to the CLI on <code>localhost</code>.</p>
+
+  <ol>
+    <li>Sign in at <a href="https://www.icloud.com" target="_blank" rel="noopener">icloud.com</a> in this browser (Chrome or Firefox). Keep that tab open.</li>
+    <li>Open <b>Developer Tools</b>: press <kbd>F12</kbd> (or <kbd>Cmd</kbd>+<kbd>Opt</kbd>+<kbd>I</kbd> on Mac), and click the <b>Network</b> tab.</li>
+    <li>Reload the iCloud tab. In the Network list, click any request whose name ends in <code>icloud.com</code>.</li>
+    <li>Scroll to <b>Request Headers</b>, find <b>Cookie</b>, and copy its <b>entire</b> value (it's long).</li>
+    <li>Paste it below and click <b>Connect</b>.</li>
+  </ol>
+
+  <textarea id="cookie" placeholder="Paste the Cookie header value here…" autofocus></textarea><br>
+  <button id="go">Connect</button>
+  <p id="msg"></p>
+  <p class="tip">Tip (Chrome/Edge): right-click the request &rarr; <i>Copy</i> &rarr; <i>Copy as cURL</i> also works — paste the whole thing, we'll pull the cookie out.</p>
+
+<script>
+  const btn = document.getElementById('go');
+  const ta = document.getElementById('cookie');
+  const msg = document.getElementById('msg');
+
+  // If the user pasted a full "Copy as cURL", pull just the Cookie header out.
+  function extractCookie(s) {
+    s = s.trim();
+    const m = s.match(/-H\s+['"]cookie:\s*([^'"]+)['"]/i) || s.match(/\bcookie:\s*([^\n'"]+)/i);
+    return m ? m[1].trim() : s;
+  }
+
+  btn.onclick = async () => {
+    const cookie = extractCookie(ta.value);
+    if (!cookie) { msg.textContent = 'Paste the Cookie value first.'; msg.className = 'err'; return; }
+    btn.disabled = true; msg.textContent = 'Connecting…'; msg.className = '';
+    try {
+      const r = await fetch('/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'cookie=' + encodeURIComponent(cookie),
+      });
+      if (r.ok) {
+        msg.textContent = '✓ Sent! Return to your terminal — you can close this tab.';
+        msg.className = 'ok';
+      } else {
+        msg.textContent = '✗ ' + (await r.text());
+        msg.className = 'err';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      msg.textContent = '✗ Could not reach the CLI. Is `hidemail auth` still running?';
+      msg.className = 'err';
+      btn.disabled = false;
+    }
+  };
+</script>
+</body>
+</html>
